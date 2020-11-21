@@ -64,3 +64,53 @@ app.post('/deleteemployee', (request, response) => {
         }
     });
 });
+app.get('/empdetails', (request, response) => {
+    db.query('SELECT * FROM employee', (err, result) => {
+        if (err){
+            response.status(500).json({error: 'Something went wrong'})
+            console.log('error => ' + err);
+        }
+        else{
+            // console.log(result);
+            response.status(201).json({message: result});
+        }
+    });
+});
+app.post('/empPayroll', (request, response) => {
+    let id = request.body.emp_id;
+    db.query(`SELECT * FROM payroll WHERE EMP_ID = ${id}`, (err, result) => {
+        if (err){
+            response.status(500).json({error: 'Something went wrong'})
+            console.log('error => ' + err);
+        }
+        else{
+            // console.log(result);
+            response.status(201).json({message: result});
+        }
+    });
+});
+app.post('/addpayroll', (request, response) => {
+    const {body: {dept_id,
+                 emp_id,
+                  basic, 
+                  bonus, 
+                  hra, 
+                  medical, 
+                  ta, 
+                  da, 
+                  tax, 
+                  leaves}} = request;
+    const salary = basic + bonus + hra + ta + da + medical - tax - ((basic/30)*leaves);
+    let emp = {DEPT_ID: dept_id, EMP_ID: emp_id, BASIC: basic, BONUS: bonus, HRA: hra, MEDICAL_ALLOWANCE: medical, TA: ta, DA: da, TAX: tax, LEAVES: leaves, NET_SALARY: salary}
+    let sql = 'INSERT INTO payroll SET ?';
+    db.query(sql, emp, (err, result) => {
+        if (err){
+            response.status(500).json({error: 'Something went wrong'})
+            console.log('error => ' + err);
+        }
+        else{
+            // console.log(result);
+            response.status(201).json({message: `Successfully added payroll for employee id ${emp_id}`});
+        }
+    });
+});
